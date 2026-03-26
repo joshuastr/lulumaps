@@ -31,7 +31,10 @@ const CHAIN_BLACKLIST = [
   'jiffy lube', 'midas', 'firestone', 'goodyear',
   'superstore', 'no frills', 'food basics', 'freshco', 'metro',
   'shoppers drug mart', 'rexall', 'london drugs',
-  'lcbo', 'beer store'
+  'lcbo', 'beer store',
+  'whole foods', 'trader joe', 'safeway', 'sobeys', 'loblaws',
+  'kroger', 'publix', 'aldi', 'lidl', 'piggly wiggly',
+  'save-on-foods', 'co-op grocery', 'grocery'
 ];
 
 function isChainStore(name) {
@@ -253,8 +256,13 @@ async function fetchNearby() {
     if (!res.ok) throw new Error('Nearby search failed');
     places = await res.json();
 
-    // Filter out operational only and chain stores
-    places = places.filter(p => p.status === 'OPERATIONAL' && !isChainStore(p.name));
+    // Filter out non-operational, chain stores, and grocery stores
+    const boringTypes = ['grocery_store', 'supermarket', 'convenience_store', 'gas_station', 'car_dealer', 'car_repair', 'insurance_agency', 'real_estate_agency', 'laundry', 'storage'];
+    places = places.filter(p =>
+      p.status === 'OPERATIONAL' &&
+      !isChainStore(p.name) &&
+      !p.types.some(t => boringTypes.includes(t))
+    );
 
     // Update radius circle
     if (radiusCircle) {
