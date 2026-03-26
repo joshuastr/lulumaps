@@ -512,7 +512,8 @@ async function fetchCitySuggestions(query) {
     const results = await res.json();
     const seen = new Set();
     const cities = results
-      .filter(r => ['city','town','village','municipality','suburb','county'].includes(r.addresstype))
+      .filter(r => r.class === 'place' && r.type === 'city')
+
       .filter(r => {
         const key = (r.address?.city || r.address?.town || r.address?.village || r.name) + '|' + (r.address?.country || '');
         if (seen.has(key)) return false;
