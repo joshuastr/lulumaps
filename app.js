@@ -91,9 +91,41 @@ function bindEvents() {
   const cityInput = document.getElementById('city-input');
   const searchBtn = document.getElementById('search-btn');
 
-  searchBtn.addEventListener('click', () => searchCity(cityInput.value));
+  searchBtn.addEventListener('click', () => {
+    hideSuggestions();
+    searchCity(cityInput.value);
+  });
   cityInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') searchCity(cityInput.value);
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); return; }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); return; }
+    if (e.key === 'Escape')    { hideSuggestions(); return; }
+    if (e.key === 'Enter') {
+      const focused = document.querySelector('.city-suggestion-item.focused');
+      if (focused) {
+        cityInput.value = focused.dataset.city;
+        hideSuggestions();
+        searchCity(cityInput.value);
+      } else {
+        hideSuggestions();
+        searchCity(cityInput.value);
+      }
+    }
+  });
+
+  // Autocomplete
+  let acDebounce = null;
+  let acFocusIndex = -1;
+
+  cityInput.addEventListener('input', () => {
+    clearTimeout(acDebounce);
+    acFocusIndex = -1;
+    const q = cityInput.value.trim();
+    if (q.length < 2) { hideSuggestions(); return; }
+    acDebounce = setTimeout(() => fetchCitySuggestions(q), 280);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) hideSuggestions();
   });
 
   // Filter pills
@@ -275,7 +307,7 @@ async function fetchNearby() {
     places = await res.json();
 
     // Filter out non-operational, chain stores, and grocery stores
-    const boringTypes = ['grocery_store', 'supermarket', 'convenience_store', 'gas_station', 'car_dealer', 'car_repair', 'insurance_agency', 'real_estate_agency', 'laundry', 'storage'];
+    const boringTypes = ['grocery_store', 'supermarket', 'convenience_store', 'gas_station', 'car_dealer', 'car_repair', 'insurance_agency', 'real_estate_agency', 'laundry', 'storage', 'hotel', 'motel', 'lodging', 'extended_stay_hotel', 'resort_hotel'];
     places = places.filter(p =>
       p.status === 'OPERATIONAL' &&
       !isChainStore(p.name) &&
@@ -469,6 +501,76 @@ function showLoading() {
 function hideLoading() {
   hideElement('loading-state');
   showElement('places-list');
+}
+
+// ===== City Autocomplete =====
+async function fetchCitySuggestions(query) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&featuretype=city&addressdetails=1&limit=6&format=json`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    if (!res.ok) return;
+    const results = await res.json();
+    // Filter to places classified as city/town/village and de-dupe display names
+    const seen = new Set();
+    const cities = results
+      .filter(r => ['city','town','village','municipality'].includes(r.addresstype) || r.type === 'city')
+      .filter(r => {
+        const key = (r.address?.city || r.address?.town || r.address?.village || r.name) + '|' + (r.address?.country || '');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 5);
+    renderSuggestions(cities);
+  } catch (_) {
+    // Silently fail — autocomplete is a nice-to-have
+  }
+}
+
+function renderSuggestions(cities) {
+  const box = document.getElementById('city-suggestions');
+  if (!cities.length) { hideSuggestions(); return; }
+
+  box.innerHTML = '';
+  cities.forEach(city => {
+    const cityName = city.address?.city || city.address?.town || city.address?.village || city.name;
+    const country  = city.address?.country || '';
+    const state    = city.address?.state || city.address?.province || '';
+    const subtitle = [state, country].filter(Boolean).join(', ');
+    const display  = subtitle ? `${cityName} — ${subtitle}` : cityName;
+
+    const item = document.createElement('div');
+    item.className = 'city-suggestion-item';
+    item.dataset.city = cityName;
+    item.textContent = display;
+    item.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // keep focus on input
+      document.getElementById('city-input').value = cityName;
+      hideSuggestions();
+      searchCity(cityName);
+    });
+    box.appendChild(item);
+  });
+
+  box.classList.remove('hidden');
+}
+
+function hideSuggestions() {
+  const box = document.getElementById('city-suggestions');
+  box.classList.add('hidden');
+  box.innerHTML = '';
+  document.querySelectorAll('.city-suggestion-item').forEach(el => el.classList.remove('focused'));
+}
+
+function moveFocus(dir) {
+  const items = [...document.querySelectorAll('.city-suggestion-item')];
+  if (!items.length) return;
+  const current = items.findIndex(el => el.classList.contains('focused'));
+  items.forEach(el => el.classList.remove('focused'));
+  let next = current + dir;
+  if (next < 0) next = items.length - 1;
+  if (next >= items.length) next = 0;
+  items[next].classList.add('focused');
 }
 
 // Boot

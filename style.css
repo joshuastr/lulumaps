@@ -116,6 +116,49 @@ html, body {
   gap: var(--sp-2);
 }
 
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.city-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  min-width: 220px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.city-suggestion-item {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.city-suggestion-item:hover,
+.city-suggestion-item.focused {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.city-suggestion-item + .city-suggestion-item {
+  border-top: 1px solid var(--border-soft);
+}
+
+
 #city-input {
   font-family: var(--font);
   font-size: var(--text-base);
