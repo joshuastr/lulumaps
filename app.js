@@ -506,14 +506,13 @@ function hideLoading() {
 // ===== City Autocomplete =====
 async function fetchCitySuggestions(query) {
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&featuretype=city&addressdetails=1&limit=6&format=json`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&addressdetails=1&limit=8&format=json`;
     const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
     if (!res.ok) return;
     const results = await res.json();
-    // Filter to places classified as city/town/village and de-dupe display names
     const seen = new Set();
     const cities = results
-      .filter(r => ['city','town','village','municipality'].includes(r.addresstype) || r.type === 'city')
+      .filter(r => ['city','town','village','municipality','suburb','county'].includes(r.addresstype))
       .filter(r => {
         const key = (r.address?.city || r.address?.town || r.address?.village || r.name) + '|' + (r.address?.country || '');
         if (seen.has(key)) return false;
@@ -523,7 +522,7 @@ async function fetchCitySuggestions(query) {
       .slice(0, 5);
     renderSuggestions(cities);
   } catch (_) {
-    // Silently fail — autocomplete is a nice-to-have
+    // Silently fail
   }
 }
 
@@ -537,7 +536,7 @@ function renderSuggestions(cities) {
     const country  = city.address?.country || '';
     const state    = city.address?.state || city.address?.province || '';
     const subtitle = [state, country].filter(Boolean).join(', ');
-    const display  = subtitle ? `${cityName} — ${subtitle}` : cityName;
+    const display  = subtitle ? `${cityName}, ${subtitle}` : cityName;
 
     const item = document.createElement('div');
     item.className = 'city-suggestion-item';

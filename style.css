@@ -8,19 +8,20 @@
 /* ===== Tokens ===== */
 :root {
   /* Surfaces */
-  --canvas: hsl(36, 25%, 96%);
+  --canvas: hsl(36, 28%, 97%);
   --surface: hsl(36, 20%, 93%);
   --surface-hover: hsl(36, 18%, 90%);
+  --panel-bg: hsl(36, 30%, 98%);
 
   /* Text */
-  --ink: hsl(30, 10%, 15%);
-  --ink-secondary: hsl(28, 8%, 45%);
-  --ink-muted: hsl(25, 6%, 65%);
+  --ink: hsl(30, 12%, 12%);
+  --ink-secondary: hsl(28, 8%, 42%);
+  --ink-muted: hsl(25, 6%, 62%);
 
   /* Accent */
-  --anchor: hsl(12, 55%, 52%);
-  --anchor-light: hsl(12, 55%, 52%, 0.1);
-  --anchor-hover: hsl(12, 55%, 45%);
+  --anchor: hsl(352, 72%, 40%);
+  --anchor-light: hsla(352, 72%, 40%, 0.08);
+  --anchor-hover: hsl(352, 72%, 33%);
 
   /* Category colors */
   --cat-food: hsl(28, 60%, 50%);
@@ -31,8 +32,13 @@
   --cat-culture: hsl(255, 30%, 55%);
 
   /* Borders */
-  --border: hsl(30, 10%, 87%);
-  --border-soft: hsl(30, 8%, 90%);
+  --border: hsl(30, 12%, 86%);
+  --border-soft: hsl(30, 8%, 91%);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.10), 0 3px 8px rgba(0,0,0,0.06);
 
   /* Spacing */
   --sp-1: 4px;
@@ -44,21 +50,24 @@
   --sp-8: 48px;
 
   /* Radius */
-  --r-sm: 6px;
-  --r-md: 8px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 16px;
   --r-pill: 100px;
 
   /* Typography */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --text-xs: 0.75rem;
+  --text-xs: 0.72rem;
   --text-sm: 0.8125rem;
   --text-base: 0.9375rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.5rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
 
   /* Transitions */
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --duration: 200ms;
+  --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --duration: 180ms;
 }
 
 /* ===== Base ===== */
@@ -80,10 +89,11 @@ html, body {
   padding: var(--sp-4) var(--sp-5);
   border-bottom: 1px solid var(--border);
   background: var(--canvas);
-  height: 56px;
+  height: 60px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: var(--shadow-sm);
 }
 
 .header-left {
@@ -97,9 +107,10 @@ html, body {
 }
 
 .app-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  user-select: none;
 }
 
 .title-lulu {
@@ -107,7 +118,7 @@ html, body {
 }
 
 .title-maps {
-  color: #d31334;
+  color: var(--anchor);
 }
 
 .header-search {
@@ -203,7 +214,7 @@ html, body {
 #app-main {
   display: grid;
   grid-template-columns: 1fr 420px;
-  height: calc(100vh - 56px);
+  height: calc(100vh - 60px);
 }
 
 /* ===== Map Panel ===== */
@@ -293,12 +304,13 @@ html, body {
 /* ===== Discovery Panel ===== */
 #discovery-panel {
   border-left: 1px solid var(--border);
-  background: var(--canvas);
+  background: var(--panel-bg);
   overflow-y: auto;
   padding: var(--sp-5);
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
+  background-image: radial-gradient(ellipse at 60% 0%, hsla(352,60%,52%,0.04) 0%, transparent 60%);
 }
 
 /* Store selector */
@@ -444,34 +456,43 @@ html, body {
   gap: var(--sp-3);
 }
 
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .place-card {
   display: grid;
-  grid-template-columns: 80px 1fr;
+  grid-template-columns: 84px 1fr;
   gap: var(--sp-4);
   padding: var(--sp-4);
   border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   cursor: pointer;
-  transition: all var(--duration) var(--ease);
+  transition: box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease), transform var(--duration) var(--ease);
+  background: white;
+  box-shadow: var(--shadow-sm);
+  animation: card-in 300ms var(--ease-out) both;
 }
 
 .place-card:hover {
   border-color: var(--anchor);
-  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .place-photo {
-  width: 80px;
-  height: 80px;
-  border-radius: var(--r-sm);
+  width: 84px;
+  height: 84px;
+  border-radius: var(--r-md);
   object-fit: cover;
   background: var(--surface);
 }
 
 .place-photo-placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: var(--r-sm);
+  width: 84px;
+  height: 84px;
+  border-radius: var(--r-md);
   background: var(--surface);
   display: flex;
   align-items: center;
@@ -544,6 +565,11 @@ html, body {
 .type-culture { color: var(--cat-culture); }
 
 /* ===== States ===== */
+@keyframes empty-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 #empty-state,
 #no-results {
   display: flex;
@@ -553,20 +579,41 @@ html, body {
   text-align: center;
   padding: var(--sp-8) var(--sp-5);
   flex: 1;
+  animation: empty-in 400ms var(--ease-out) both;
+}
+
+.empty-icon {
+  font-size: 2.6rem;
+  margin-bottom: var(--sp-4);
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.10));
+  animation: empty-in 400ms var(--ease-out) both;
 }
 
 .empty-title {
-  font-size: var(--text-lg);
-  font-weight: 500;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.04em;
   margin-bottom: var(--sp-2);
   color: var(--ink);
+  line-height: 1.1;
 }
 
 .empty-body {
   font-size: var(--text-sm);
   color: var(--ink-muted);
-  max-width: 260px;
-  line-height: 1.5;
+  max-width: 240px;
+  line-height: 1.6;
+}
+
+.quick-cities-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+  margin-top: var(--sp-6);
+  margin-bottom: var(--sp-3);
 }
 
 .quick-cities {
@@ -574,26 +621,31 @@ html, body {
   flex-wrap: wrap;
   gap: var(--sp-2);
   justify-content: center;
-  margin-top: var(--sp-5);
-  max-width: 320px;
+  max-width: 340px;
 }
 
 .quick-city {
   font-family: var(--font);
   font-size: var(--text-sm);
   font-weight: 500;
-  padding: var(--sp-2) var(--sp-3);
+  padding: 7px var(--sp-3);
   border: 1px solid var(--border);
   border-radius: var(--r-pill);
-  background: var(--canvas);
+  background: white;
   color: var(--ink-secondary);
   cursor: pointer;
   transition: all var(--duration) var(--ease);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .quick-city:hover {
   border-color: var(--anchor);
   color: var(--anchor);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 #loading-state {
