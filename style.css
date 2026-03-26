@@ -69,6 +69,7 @@ html, body {
   color: var(--ink);
   background: var(--canvas);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-x: none;
 }
 
 /* ===== Header ===== */
@@ -99,7 +100,14 @@ html, body {
   font-size: var(--text-lg);
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+.title-lulu {
   color: var(--ink);
+}
+
+.title-maps {
+  color: var(--anchor);
 }
 
 .header-search {
@@ -516,6 +524,33 @@ html, body {
   color: var(--ink-muted);
   max-width: 260px;
   line-height: 1.5;
+}
+
+.quick-cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  justify-content: center;
+  margin-top: var(--sp-5);
+  max-width: 320px;
+}
+
+.quick-city {
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--canvas);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+
+.quick-city:hover {
+  border-color: var(--anchor);
+  color: var(--anchor);
 }
 
 #loading-state {

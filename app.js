@@ -39,6 +39,13 @@ function isChainStore(name) {
   return CHAIN_BLACKLIST.some(chain => lower.includes(chain));
 }
 
+// XSS protection
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 // Category type mapping (mirrors server-side)
 const CATEGORY_MAP = {
   restaurant: 'food', bakery: 'food',
@@ -103,6 +110,15 @@ function bindEvents() {
       btn.classList.add('active');
       activeRadius = Number(btn.dataset.radius);
       fetchNearby();
+    });
+  });
+
+  // Quick-select cities
+  document.querySelectorAll('.quick-city').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const city = btn.dataset.city;
+      document.getElementById('city-input').value = city;
+      searchCity(city);
     });
   });
 }
@@ -283,35 +299,35 @@ function renderPlaces(places) {
     card.style.animationDelay = `${index * 40}ms`;
 
     const photoHtml = place.photoRef
-      ? `<img class="place-photo" src="${API_BASE}/photo?name=${encodeURIComponent(place.photoRef)}" alt="${place.name}" loading="lazy" onerror="this.outerHTML='<div class=\\'place-photo-placeholder\\'>No photo</div>'">`
+      ? `<img class="place-photo" src="${API_BASE}/photo?name=${encodeURIComponent(place.photoRef)}" alt="${escapeHtml(place.name)}" loading="lazy" onerror="this.outerHTML='<div class=\\'place-photo-placeholder\\'>No photo</div>'">`
       : '<div class="place-photo-placeholder">No photo</div>';
 
     const ratingHtml = place.rating
       ? `<span class="place-rating">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          ${place.rating}
+          ${escapeHtml(String(place.rating))}
         </span>`
       : '';
 
     const priceHtml = place.priceLevel
-      ? `<span>${priceLevelText(place.priceLevel)}</span>`
+      ? `<span>${escapeHtml(priceLevelText(place.priceLevel))}</span>`
       : '';
 
     const distanceHtml = distance !== null
-      ? `<span class="place-distance">${formatDistance(distance)}</span>`
+      ? `<span class="place-distance">${escapeHtml(formatDistance(distance))}</span>`
       : '';
 
     card.innerHTML = `
       ${photoHtml}
       <div class="place-info">
-        <span class="place-type type-${category}">${place.primaryType || category}</span>
-        <span class="place-name">${place.name}</span>
+        <span class="place-type type-${escapeHtml(category)}">${escapeHtml(place.primaryType || category)}</span>
+        <span class="place-name">${escapeHtml(place.name)}</span>
         <div class="place-meta">
           ${ratingHtml}
           ${priceHtml}
           ${distanceHtml}
         </div>
-        <span class="place-address">${place.address}</span>
+        <span class="place-address">${escapeHtml(place.address)}</span>
       </div>
     `;
 

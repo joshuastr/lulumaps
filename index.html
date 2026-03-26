@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>lulumaps</title>
+  <title>LuluMaps</title>
   <meta name="description" content="Discover cool neighbourhoods anchored by Lululemon stores">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -14,12 +14,10 @@
 <body>
   <header id="app-header">
     <div class="header-left">
-      <svg class="app-logo" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 3a9 9 0 0 1 6.36 15.36" stroke="var(--anchor)" stroke-width="2" stroke-linecap="round" fill="none"/>
-        <path d="M5.64 18.36A9 9 0 0 1 12 3" stroke="var(--anchor)" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.35"/>
-        <circle cx="12" cy="12" r="2.5" fill="var(--anchor)"/>
+      <svg class="app-logo" width="24" height="24" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 4 C16 4, 4 20, 4 36 C4 48, 12 56, 20 56 C26 56, 30 52, 32 46 C34 52, 38 56, 44 56 C52 56, 60 48, 60 36 C60 20, 48 4, 32 4Z" fill="var(--anchor)"/>
       </svg>
-      <h1 class="app-title">lulumaps</h1>
+      <h1 class="app-title"><span class="title-lulu">Lulu</span><span class="title-maps">Maps</span></h1>
     </div>
     <div class="header-search">
       <input
@@ -72,7 +70,21 @@
 
       <div id="empty-state">
         <p class="empty-title">Where to?</p>
-        <p class="empty-body">Search a city to find the Lululemon anchor and discover the neighbourhood around it.</p>
+        <p class="empty-body">Pick a city to discover the neighbourhood around its Lululemon stores.</p>
+        <div class="quick-cities">
+          <button class="quick-city" data-city="Calgary">Calgary</button>
+          <button class="quick-city" data-city="New York">New York</button>
+          <button class="quick-city" data-city="Toronto">Toronto</button>
+          <button class="quick-city" data-city="London">London</button>
+          <button class="quick-city" data-city="Los Angeles">Los Angeles</button>
+          <button class="quick-city" data-city="Vancouver">Vancouver</button>
+          <button class="quick-city" data-city="Chicago">Chicago</button>
+          <button class="quick-city" data-city="San Francisco">San Francisco</button>
+          <button class="quick-city" data-city="Miami">Miami</button>
+          <button class="quick-city" data-city="Paris">Paris</button>
+          <button class="quick-city" data-city="Sydney">Sydney</button>
+          <button class="quick-city" data-city="Tokyo">Tokyo</button>
+        </div>
       </div>
 
       <div id="loading-state" class="hidden">

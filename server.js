@@ -25,7 +25,29 @@ if (!API_KEY) {
 }
 
 const app = express();
+
+// Rate limiting: 60 requests per minute per IP
+const rateLimits = new Map();
+const RATE_LIMIT = 60;
+const RATE_WINDOW = 60 * 1000;
+
+function rateLimit(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  const entry = rateLimits.get(ip);
+  if (!entry || now - entry.start > RATE_WINDOW) {
+    rateLimits.set(ip, { start: now, count: 1 });
+    return next();
+  }
+  entry.count++;
+  if (entry.count > RATE_LIMIT) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  next();
+}
+
 app.use(cors());
+app.use(rateLimit);
 
 // Simple in-memory cache
 const cache = new Map();
@@ -48,7 +70,9 @@ function setCache(key, data) {
 // Find Lululemon stores in a city
 app.get('/api/stores', async (req, res) => {
   const { city } = req.query;
-  if (!city) return res.status(400).json({ error: 'city parameter required' });
+  if (!city || typeof city !== 'string' || city.length > 100) {
+    return res.status(400).json({ error: 'Valid city parameter required (max 100 chars)' });
+  }
 
   const cacheKey = `stores:${city.toLowerCase()}`;
   const cached = getCached(cacheKey);
@@ -96,7 +120,13 @@ app.get('/api/nearby', async (req, res) => {
   const { lat, lng, radius, type } = req.query;
   if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
 
-  const r = Number(radius) || 800;
+  const latNum = Number(lat);
+  const lngNum = Number(lng);
+  if (isNaN(latNum) || isNaN(lngNum) || latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+    return res.status(400).json({ error: 'Invalid coordinates' });
+  }
+
+  const r = Math.min(Math.max(Number(radius) || 800, 100), 5000);
   const categoryTypes = {
     food: ['restaurant', 'bakery'],
     coffee: ['cafe'],
@@ -167,7 +197,9 @@ app.get('/api/nearby', async (req, res) => {
 // Photo proxy
 app.get('/api/photo', async (req, res) => {
   const { name } = req.query;
-  if (!name) return res.status(400).json({ error: 'name parameter required' });
+  if (!name || typeof name !== 'string' || !name.startsWith('places/')) {
+    return res.status(400).json({ error: 'Invalid photo name' });
+  }
 
   try {
     const url = `https://places.googleapis.com/v1/${name}/media?maxWidthPx=400&key=${API_KEY}`;
