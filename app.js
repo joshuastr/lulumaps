@@ -124,6 +124,24 @@ function bindEvents() {
       searchCity(city);
     });
   });
+
+  // Home link - reset to landing
+  document.getElementById('home-link').addEventListener('click', () => {
+    clearPlaces();
+    clearStoreMarkers();
+    activeStore = null;
+    activeFilter = 'all';
+    document.getElementById('city-input').value = '';
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.filter-pill[data-type="all"]').classList.add('active');
+    hideElement('store-selector');
+    hideElement('filters');
+    hideElement('no-results');
+    hideElement('loading-state');
+    showElement('empty-state');
+    showElement('places-list');
+    map.setView([43.65, -79.38], 3, { animate: true });
+  });
 }
 
 async function searchCity(city) {
