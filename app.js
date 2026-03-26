@@ -112,16 +112,12 @@ function bindEvents() {
     }
   });
 
-  // Autocomplete
-  let acDebounce = null;
-  let acFocusIndex = -1;
-
+  // City autocomplete
   cityInput.addEventListener('input', () => {
-    clearTimeout(acDebounce);
-    acFocusIndex = -1;
     const q = cityInput.value.trim();
-    if (q.length < 2) { hideSuggestions(); return; }
-    acDebounce = setTimeout(() => fetchCitySuggestions(q), 280);
+    if (q.length < 1) { hideSuggestions(); return; }
+    const matches = CITIES.filter(c => c.toLowerCase().startsWith(q.toLowerCase())).slice(0, 6);
+    renderSuggestions(matches);
   });
 
   document.addEventListener('click', (e) => {
@@ -504,50 +500,41 @@ function hideLoading() {
 }
 
 // ===== City Autocomplete =====
-async function fetchCitySuggestions(query) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&addressdetails=1&limit=8&format=json`;
-    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-    if (!res.ok) return;
-    const results = await res.json();
-    const seen = new Set();
-    const cities = results
-      .filter(r => r.class === 'place' && r.type === 'city')
+const CITIES = [
+  'Abu Dhabi','Adelaide','Amsterdam','Anchorage','Athens','Atlanta',
+  'Auckland','Austin','Bangkok','Barcelona','Beijing','Berlin','Bogota',
+  'Boston','Brisbane','Brussels','Budapest','Buenos Aires','Calgary',
+  'Cape Town','Charlotte','Chicago','Copenhagen','Dallas','Denver',
+  'Detroit','Dubai','Dublin','Edinburgh','Frankfurt','Geneva',
+  'Glasgow','Guadalajara','Hamburg','Helsinki','Ho Chi Minh City',
+  'Hong Kong','Honolulu','Houston','Istanbul','Jakarta','Johannesburg',
+  'Kansas City','Kuala Lumpur','Las Vegas','Lima','Lisbon','London',
+  'Los Angeles','Lyon','Madrid','Manchester','Melbourne','Mexico City',
+  'Miami','Milan','Minneapolis','Monterrey','Montreal','Moscow',
+  'Mumbai','Munich','Nairobi','Nashville','New York','Oslo',
+  'Ottawa','Paris','Perth','Philadelphia','Phoenix','Portland',
+  'Prague','Quebec City','Riyadh','Rome','Salt Lake City',
+  'San Diego','San Francisco','Santiago','Sao Paulo','Seattle',
+  'Seoul','Shanghai','Singapore','Stockholm','Sydney','Taipei',
+  'Tel Aviv','Tokyo','Toronto','Vancouver','Vienna','Warsaw',
+  'Washington DC','Zurich'
+];
 
-      .filter(r => {
-        const key = (r.address?.city || r.address?.town || r.address?.village || r.name) + '|' + (r.address?.country || '');
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
-      .slice(0, 5);
-    renderSuggestions(cities);
-  } catch (_) {
-    // Silently fail
-  }
-}
-
-function renderSuggestions(cities) {
+function renderSuggestions(matches) {
   const box = document.getElementById('city-suggestions');
-  if (!cities.length) { hideSuggestions(); return; }
+  if (!matches.length) { hideSuggestions(); return; }
 
   box.innerHTML = '';
-  cities.forEach(city => {
-    const cityName = city.address?.city || city.address?.town || city.address?.village || city.name;
-    const country  = city.address?.country || '';
-    const state    = city.address?.state || city.address?.province || '';
-    const subtitle = [state, country].filter(Boolean).join(', ');
-    const display  = subtitle ? `${cityName}, ${subtitle}` : cityName;
-
+  matches.forEach(city => {
     const item = document.createElement('div');
     item.className = 'city-suggestion-item';
-    item.dataset.city = cityName;
-    item.textContent = display;
+    item.dataset.city = city;
+    item.textContent = city;
     item.addEventListener('mousedown', (e) => {
-      e.preventDefault(); // keep focus on input
-      document.getElementById('city-input').value = cityName;
+      e.preventDefault();
+      document.getElementById('city-input').value = city;
       hideSuggestions();
-      searchCity(cityName);
+      searchCity(city);
     });
     box.appendChild(item);
   });
@@ -559,7 +546,6 @@ function hideSuggestions() {
   const box = document.getElementById('city-suggestions');
   box.classList.add('hidden');
   box.innerHTML = '';
-  document.querySelectorAll('.city-suggestion-item').forEach(el => el.classList.remove('focused'));
 }
 
 function moveFocus(dir) {
