@@ -1,4 +1,8 @@
+import { inject } from '@vercel/analytics';
+inject();
+
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';
+
 
 // State
 let map;
